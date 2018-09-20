@@ -21,21 +21,39 @@ function createTodoItem(text) {
   todoItem.appendChild(createTodoTextElement(text));
   todoItem.appendChild(createTodoRemoveButton());
 
-  todoItem.addEventListener("mouseover", () => showRemoveButton());
-  todoItem.addEventListener("mouseleave", () => hideRemoveButton());
+  todoItem.addEventListener("mouseenter", event =>
+    showRemoveButton(event.target)
+  );
+  todoItem.addEventListener("mouseleave", event =>
+    hideRemoveButton(event.target)
+  );
 
   inputArea.parentNode.insertBefore(todoItem, inputArea.nextSibling);
 }
 
 function editTodoItem() {}
 
-function selectToggleAll() {}
+function selectToggleAll() {
+  let todoItemCheckboxes = document.querySelectorAll(".todo-checkbox");
+  let uncheckedBoxes = todoItemCheckboxes.map(c => !c.checked);
+  if (uncheckedBoxes.length == 0) {
+    todoItemCheckboxes.forEach(c => (c.checked = false));
+  } else {
+    uncheckedBoxes.forEach(c => (c.checked = true));
+  }
+}
 
 function selectToggle() {}
 
-function showRemoveButton() {}
+function showRemoveButton(todoItem) {
+  let button = todoItem.lastElementChild;
+  button.hidden = false;
+}
 
-function hideRemoveButton() {}
+function hideRemoveButton(todoItem) {
+  let button = todoItem.lastElementChild;
+  button.hidden = true;
+}
 
 function confirmTodoItemEdit() {}
 
@@ -52,6 +70,9 @@ function loadEvents() {
       createTodoItem(inputTextArea.value);
     }
   });
+
+  let toggleAllClickableSymbol = document.querySelector("#toggle-all");
+  toggleAllClickableSymbol.addEventListener("click", () => selectToggleAll());
 }
 
 function createTodoCheckbox() {
@@ -73,6 +94,7 @@ function createTodoRemoveButton() {
   let button = document.createElement("button");
   button.textContent = "x";
   button.className = "todo-button";
+  button.hidden = true;
   button.addEventListener("click", () => removeTodoItem());
   return button;
 }
