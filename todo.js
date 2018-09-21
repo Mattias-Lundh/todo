@@ -31,11 +31,20 @@ function createTodoItem(text) {
   inputArea.parentNode.insertBefore(todoItem, inputArea.nextSibling);
 }
 
-function editTodoItem() {}
+function editTodoItem(label) {
+  label.contentEditable = "true";
+  // let text = label.textContent;
+  // label.textContent = "";
+  // label.textContent = text;
+  // label.selectionStart = label.textContent.length; fel attribute!!
+  // label.selectionEnd = label.textContent.length;
+}
 
 function selectToggleAll() {
-  let todoItemCheckboxes = document.querySelectorAll(".todo-checkbox");
-  let uncheckedBoxes = todoItemCheckboxes.map(c => !c.checked);
+  let todoItemCheckboxes = Array.from(
+    document.querySelectorAll(".todo-checkbox")
+  );
+  let uncheckedBoxes = todoItemCheckboxes.filter(c => !c.checked);
   if (uncheckedBoxes.length == 0) {
     todoItemCheckboxes.forEach(c => (c.checked = false));
   } else {
@@ -43,7 +52,10 @@ function selectToggleAll() {
   }
 }
 
-function selectToggle() {}
+function selectToggle(checkbox) {
+  let label = checkbox.parentNode.querySelector("label");
+  toggleMarkAsCompleted(label, checkbox.checked);
+}
 
 function showRemoveButton(todoItem) {
   let button = todoItem.lastElementChild;
@@ -55,9 +67,14 @@ function hideRemoveButton(todoItem) {
   button.hidden = true;
 }
 
-function confirmTodoItemEdit() {}
+function confirmTodoItemEdit(label) {
+  label.contentEditable = false;
+}
 
-function removeTodoItem() {}
+function removeTodoItem(button) {
+  let parent = document.querySelector("main");
+  parent.removeChild(button.parentNode);
+}
 
 /*
 INTE EVENTS
@@ -68,6 +85,7 @@ function loadEvents() {
   inputTextArea.addEventListener("keydown", event => {
     if (event.keyCode == 13) {
       createTodoItem(inputTextArea.value);
+      inputTextArea.value = "";
     }
   });
 
@@ -79,6 +97,7 @@ function createTodoCheckbox() {
   let checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.className = "todo-checkbox";
+  checkbox.addEventListener("change", event => selectToggle(event.target));
   return checkbox;
 }
 
@@ -86,7 +105,12 @@ function createTodoTextElement(text) {
   let label = document.createElement("label");
   label.textContent = text;
   label.className = "todo-label";
-  label.addEventListener("dblclick", () => editTodoItem());
+  label.addEventListener("dblclick", event => editTodoItem(event.target));
+  label.addEventListener("keydown", event => {
+    if (event.keyCode == 13) {
+      confirmTodoItemEdit(event.target);
+    }
+  });
   return label;
 }
 
@@ -95,6 +119,14 @@ function createTodoRemoveButton() {
   button.textContent = "x";
   button.className = "todo-button";
   button.hidden = true;
-  button.addEventListener("click", () => removeTodoItem());
+  button.addEventListener("click", event => removeTodoItem(event.target));
   return button;
+}
+
+function toggleMarkAsCompleted(label, checked) {
+  if (checked) {
+    label.className += " todo-completed";
+  } else {
+    label.className = label.className.replace(" todo-completed", "");
+  }
 }

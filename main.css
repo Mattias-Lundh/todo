@@ -104,6 +104,7 @@ footer p {
 }
 
 .todo-label {
+  color: #4d4d4d;
   font-size: 24px;
   padding: 0.9rem;
   flex: 1;
@@ -127,4 +128,9 @@ footer p {
   margin: 0.5rem;
   padding: 0.5rem;
   background-color: white;
+}
+
+.todo-completed {
+  color: rgba(175, 47, 47, 0.15);
+  text-decoration: line-through;
 }
