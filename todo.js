@@ -113,12 +113,23 @@ function removeTodoItem(button) {
 INTE EVENTS
 */
 
+function updateBottomControlsVisibility() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  let bottomControl = document.querySelector("#bottom-controls");
+  if (todoItems.length != 0) {
+    bottomControl.style.display = "flex";
+  } else {
+    bottomControl.style.display = "none";
+  }
+}
+
 function loadEvents() {
   let inputTextArea = document.querySelector("#input-box");
   inputTextArea.addEventListener("keydown", event => {
     if (event.keyCode == 13 && "" != inputTextArea.value) {
       createTodoItem(inputTextArea.value);
       inputTextArea.value = "";
+      updateBottomControlsVisibility();
       updateItemCount();
     }
   });
@@ -130,16 +141,28 @@ function loadEvents() {
   });
 
   let clearCompletedLabel = document.querySelector("#clear");
-  clearCompletedLabel.addEventListener("click", () => clearCompleted());
+  clearCompletedLabel.addEventListener("click", () => {
+    clearCompleted();
+    updateBottomControlsVisibility();
+  });
 
   let allFilterLabel = document.querySelector("#all");
-  allFilterLabel.addEventListener("click", () => filterAll());
+  allFilterLabel.addEventListener("click", () => {
+    setFilterBorder(allFilterLabel);
+    filterAll();
+  });
 
   let activeFilterLabel = document.querySelector("#active");
-  activeFilterLabel.addEventListener("click", () => filterActive());
+  activeFilterLabel.addEventListener("click", () => {
+    setFilterBorder(activeFilterLabel);
+    filterActive();
+  });
 
   let completedFilterLabel = document.querySelector("#completed");
-  completedFilterLabel.addEventListener("click", () => filterCompleted());
+  completedFilterLabel.addEventListener("click", () => {
+    setFilterBorder(completedFilterLabel);
+    filterCompleted();
+  });
 }
 
 function createTodoCheckbox() {
@@ -150,6 +173,14 @@ function createTodoCheckbox() {
     selectToggle(event.target);
     updateItemCount();
   });
+
+  // let input = document.createElement("input");
+  // input.type = "checkbox";
+  // let tick = document.createElement("span");
+  // tick.textContent = &#10004;
+  // checkbox.appendChild(input);
+  // checkbox.appendChild(tick);
+
   return checkbox;
 }
 
@@ -168,10 +199,13 @@ function createTodoTextElement(text) {
 
 function createTodoRemoveButton() {
   let button = document.createElement("button");
-  button.textContent = "x";
+  button.textContent = "×";
   button.className = "todo-button";
   button.hidden = true;
-  button.addEventListener("click", event => removeTodoItem(event.target));
+  button.addEventListener("click", event => {
+    removeTodoItem(event.target);
+    updateBottomControlsVisibility();
+  });
   return button;
 }
 
@@ -194,4 +228,15 @@ function updateItemCount() {
 
   let label = document.querySelector("#remaining-count");
   label.textContent = result;
+}
+
+function setFilterBorder(targetLabel) {
+  let filterLabels = document.querySelectorAll("#all, #active, #completed");
+  filterLabels.forEach(l => {
+    l.style.border = "";
+    l.style.borderRadius = "";
+  });
+
+  targetLabel.style.border = "0.04em solid rgba(47, 47, 47, 0.30)";
+  targetLabel.style.borderRadius = "10%";
 }
