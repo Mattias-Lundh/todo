@@ -39,7 +39,7 @@ function clearCompleted() {
 }
 
 function createTodoItem(text) {
-  let inputArea = document.querySelector("main > :first-child");
+  let inputArea = document.querySelector("main > :last-child");
   let todoItem = document.createElement("div");
   todoItem.className = "todo-item";
 
@@ -54,7 +54,7 @@ function createTodoItem(text) {
     hideRemoveButton(event.target)
   );
 
-  inputArea.parentNode.insertBefore(todoItem, inputArea.nextSibling);
+  inputArea.parentNode.insertBefore(todoItem, inputArea);
 }
 
 function editTodoItem(label) {
@@ -66,6 +66,21 @@ function editTodoItem(label) {
   // label.selectionStart = label.textContent.length;
   // label.selectionEnd = label.textContent.length;
 }
+function updateToggleButton() {
+  let toggleButton = document.querySelector("#toggle-all");
+  let checkboxes = Array.from(document.querySelectorAll(".todo-checkbox"));
+  if (checkboxes.length == 0) {
+    toggleButton.style.visibility = "hidden";
+  } else {
+    toggleButton.style.visibility = "visible";
+  }
+  unCheckedCheckboxes = checkboxes.filter(c => !c.checked);
+  if (unCheckedCheckboxes.length == 0) {
+    toggleButton.style.color = "#4a4a4a";
+  } else {
+    toggleButton.style.color = "#aaaaaa";
+  }
+}
 
 function selectToggleAll() {
   let todoItemCheckboxes = Array.from(
@@ -73,16 +88,19 @@ function selectToggleAll() {
   );
   let uncheckedBoxes = todoItemCheckboxes.filter(c => !c.checked);
   if (uncheckedBoxes.length == 0) {
+    //make > highlighted
     todoItemCheckboxes.forEach(c => {
       c.checked = false;
       toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), false);
     });
   } else {
+    //unhighlight
     uncheckedBoxes.forEach(c => {
       c.checked = true;
       toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), true);
     });
   }
+  updateToggleButton();
 }
 
 function selectToggle(checkbox) {
@@ -131,6 +149,7 @@ function loadEvents() {
       inputTextArea.value = "";
       updateBottomControlsVisibility();
       updateItemCount();
+      updateToggleButton();
     }
   });
 
@@ -144,6 +163,7 @@ function loadEvents() {
   clearCompletedLabel.addEventListener("click", () => {
     clearCompleted();
     updateBottomControlsVisibility();
+    updateToggleButton();
   });
 
   let allFilterLabel = document.querySelector("#all");
@@ -172,6 +192,7 @@ function createTodoCheckbox() {
   checkbox.addEventListener("change", event => {
     selectToggle(event.target);
     updateItemCount();
+    updateToggleButton();
   });
 
   // let input = document.createElement("input");
@@ -205,6 +226,7 @@ function createTodoRemoveButton() {
   button.addEventListener("click", event => {
     removeTodoItem(event.target);
     updateBottomControlsVisibility();
+    updateToggleButton();
   });
   return button;
 }

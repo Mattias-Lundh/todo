@@ -42,8 +42,11 @@ main > :first-child {
   box-shadow: 0 0 0.5em;
 }
 #toggle-all {
+  visibility: hidden;
+  font-size: 22px;
   margin: 1em;
   text-align: center;
+  -webkit-transform: rotate(90deg);
 }
 
 #input-box:focus {
