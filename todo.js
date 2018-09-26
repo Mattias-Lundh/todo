@@ -4,13 +4,39 @@ loadEvents();
 EVENTS
 */
 
-function toggleFilterAll() {}
+function filterAll() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(todo => {
+    todo.style.display = "flex";
+  });
+}
 
-function toggleFilterActive() {}
+function filterActive() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(todo => {
+    if (todo.firstChild.checked) {
+      todo.style.display = "none";
+    } else {
+      todo.style.display = "flex";
+    }
+  });
+}
 
-function toggleFilterCompleted() {}
+function filterCompleted() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(todo => {
+    if (!todo.firstChild.checked) {
+      todo.style.display = "none";
+    } else {
+      todo.style.display = "flex";
+    }
+  });
+}
 
-function clearCompleted() {}
+function clearCompleted() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(t => (t.firstChild.checked ? t.remove() : {}));
+}
 
 function createTodoItem(text) {
   let inputArea = document.querySelector("main > :first-child");
@@ -36,7 +62,8 @@ function editTodoItem(label) {
   // let text = label.textContent;
   // label.textContent = "";
   // label.textContent = text;
-  // label.selectionStart = label.textContent.length; fel attribute!!
+  // label.focus();
+  // label.selectionStart = label.textContent.length;
   // label.selectionEnd = label.textContent.length;
 }
 
@@ -46,9 +73,15 @@ function selectToggleAll() {
   );
   let uncheckedBoxes = todoItemCheckboxes.filter(c => !c.checked);
   if (uncheckedBoxes.length == 0) {
-    todoItemCheckboxes.forEach(c => (c.checked = false));
+    todoItemCheckboxes.forEach(c => {
+      c.checked = false;
+      toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), false);
+    });
   } else {
-    uncheckedBoxes.forEach(c => (c.checked = true));
+    uncheckedBoxes.forEach(c => {
+      c.checked = true;
+      toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), true);
+    });
   }
 }
 
@@ -80,24 +113,74 @@ function removeTodoItem(button) {
 INTE EVENTS
 */
 
+function updateBottomControlsVisibility() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  let bottomControl = document.querySelector("#bottom-controls");
+  if (todoItems.length != 0) {
+    bottomControl.style.display = "flex";
+  } else {
+    bottomControl.style.display = "none";
+  }
+}
+
 function loadEvents() {
   let inputTextArea = document.querySelector("#input-box");
   inputTextArea.addEventListener("keydown", event => {
-    if (event.keyCode == 13) {
+    if (event.keyCode == 13 && "" != inputTextArea.value) {
       createTodoItem(inputTextArea.value);
       inputTextArea.value = "";
+      updateBottomControlsVisibility();
+      updateItemCount();
     }
   });
 
   let toggleAllClickableSymbol = document.querySelector("#toggle-all");
-  toggleAllClickableSymbol.addEventListener("click", () => selectToggleAll());
+  toggleAllClickableSymbol.addEventListener("click", () => {
+    selectToggleAll();
+    updateItemCount();
+  });
+
+  let clearCompletedLabel = document.querySelector("#clear");
+  clearCompletedLabel.addEventListener("click", () => {
+    clearCompleted();
+    updateBottomControlsVisibility();
+  });
+
+  let allFilterLabel = document.querySelector("#all");
+  allFilterLabel.addEventListener("click", () => {
+    setFilterBorder(allFilterLabel);
+    filterAll();
+  });
+
+  let activeFilterLabel = document.querySelector("#active");
+  activeFilterLabel.addEventListener("click", () => {
+    setFilterBorder(activeFilterLabel);
+    filterActive();
+  });
+
+  let completedFilterLabel = document.querySelector("#completed");
+  completedFilterLabel.addEventListener("click", () => {
+    setFilterBorder(completedFilterLabel);
+    filterCompleted();
+  });
 }
 
 function createTodoCheckbox() {
   let checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.className = "todo-checkbox";
-  checkbox.addEventListener("change", event => selectToggle(event.target));
+  checkbox.addEventListener("change", event => {
+    selectToggle(event.target);
+    updateItemCount();
+  });
+
+  // let input = document.createElement("input");
+  // input.type = "checkbox";
+  // let tick = document.createElement("span");
+  // tick.textContent = &#10004;
+  // checkbox.appendChild(input);
+  // checkbox.appendChild(tick);
+
   return checkbox;
 }
 
@@ -116,10 +199,13 @@ function createTodoTextElement(text) {
 
 function createTodoRemoveButton() {
   let button = document.createElement("button");
-  button.textContent = "x";
+  button.textContent = "×";
   button.className = "todo-button";
   button.hidden = true;
-  button.addEventListener("click", event => removeTodoItem(event.target));
+  button.addEventListener("click", event => {
+    removeTodoItem(event.target);
+    updateBottomControlsVisibility();
+  });
   return button;
 }
 
@@ -129,4 +215,28 @@ function toggleMarkAsCompleted(label, checked) {
   } else {
     label.className = label.className.replace(" todo-completed", "");
   }
+}
+
+function updateItemCount() {
+  let result = "";
+  let checkboxes = Array.from(document.querySelectorAll(".todo-checkbox"));
+  checkboxes = checkboxes.filter(c => !c.checked);
+  result = checkboxes.length + " items left";
+  if (checkboxes.length == 1) {
+    result = "1 item left";
+  }
+
+  let label = document.querySelector("#remaining-count");
+  label.textContent = result;
+}
+
+function setFilterBorder(targetLabel) {
+  let filterLabels = document.querySelectorAll("#all, #active, #completed");
+  filterLabels.forEach(l => {
+    l.style.border = "";
+    l.style.borderRadius = "";
+  });
+
+  targetLabel.style.border = "0.04em solid rgba(47, 47, 47, 0.30)";
+  targetLabel.style.borderRadius = "10%";
 }
