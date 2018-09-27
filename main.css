@@ -83,6 +83,7 @@ footer p {
     0 17px 2px -6px rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(175, 47, 47, 0.15);
 }
+
 #remaining-count {
   font-size: 14px;
   margin-top: 0.4rem;
@@ -129,17 +130,24 @@ footer p {
 }
 
 .todo-label {
+  overflow-wrap: break-word;
+  max-width: 410px;
   color: #4d4d4d;
   font-size: 24px;
   padding: 0.9rem;
   flex: 1;
 }
 
+.todo-label:focus {
+  box-shadow: inset 0px 0px 5px 0px #a0a0a0;
+  outline: 1px solid #a0a0a0;
+}
 .todo-checkbox:focus {
   outline: none;
 }
 
 .todo-checkbox {
+  min-width: 2rem;
   width: 2rem;
   height: 2rem;
   margin: 1rem;
@@ -176,3 +184,27 @@ footer p {
   color: rgba(175, 47, 47, 0.15);
   text-decoration: line-through;
 }
+
+@media screen and (max-width: 600px) {
+  main {
+    width: auto;
+  }
+
+  #bottom-controls {
+    flex-direction: column;
+  }
+
+  #clear {
+    margin: auto;
+  }
+  #remaining-count {
+    margin: auto;
+    border-bottom: 3px solid rgba(175, 47, 47, 0.5);
+  }
+  #input-box {
+    padding-right: 0px;
+  }
+}
+
+/* @media screen and (max-device-width: 600px) {
+} */

@@ -130,6 +130,10 @@ function removeTodoItem(button) {
 /*
 INTE EVENTS
 */
+function disableContentEditable() {
+  let textBoxes = Array.from(document.querySelectorAll(".todo-label"));
+  textBoxes.forEach(t => (t.contentEditable = false));
+}
 
 function updateBottomControlsVisibility() {
   let todoItems = document.querySelectorAll(".todo-item");
@@ -214,6 +218,7 @@ function createTodoTextElement(text) {
     if (event.keyCode == 13) {
       confirmTodoItemEdit(event.target);
     }
+    label.addEventListener("blur", () => disableContentEditable());
   });
   return label;
 }
