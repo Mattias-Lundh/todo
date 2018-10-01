@@ -127,6 +127,7 @@ footer p {
 
 .todo-item {
   display: flex;
+  border-bottom: 1px solid rgba(175, 47, 47, 0.15);
 }
 
 .todo-label {
