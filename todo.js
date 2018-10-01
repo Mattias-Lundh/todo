@@ -1,3 +1,5 @@
+window.filterState = "all";
+
 loadEvents();
 
 /*
@@ -9,6 +11,7 @@ function filterAll() {
   todoItems.forEach(todo => {
     todo.style.display = "flex";
   });
+  window.filterState = "all";
 }
 
 function filterActive() {
@@ -20,6 +23,7 @@ function filterActive() {
       todo.style.display = "flex";
     }
   });
+  window.filterState = "active";
 }
 
 function filterCompleted() {
@@ -31,6 +35,24 @@ function filterCompleted() {
       todo.style.display = "flex";
     }
   });
+  window.filterState = "completed";
+}
+
+function updateFilterVisibilityStatus(todo) {
+  let checkbox = todo.querySelector(".todo-checkbox");
+  if (checkbox.checked) {
+    if (window.filterState == "active") {
+      todo.style.display = "none";
+    } else {
+      todo.style.display = "flex";
+    }
+  } else {
+    if (window.filterState == "completed") {
+      todo.style.display = "none";
+    } else {
+      todo.style.display = "flex";
+    }
+  }
 }
 
 function clearCompleted() {
@@ -100,6 +122,8 @@ function selectToggleAll() {
       toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), true);
     });
   }
+  todoItemCheckboxes.forEach(t => updateFilterVisibilityStatus(t.parentNode));
+  updateClearCompletedVisibilityStatus();
   updateToggleButton();
 }
 
@@ -149,11 +173,15 @@ function loadEvents() {
   let inputTextArea = document.querySelector("#input-box");
   inputTextArea.addEventListener("keydown", event => {
     if (event.keyCode == 13 && "" != inputTextArea.value) {
+      if (event.target.value == "Godzilla") {
+        activateAmazing();
+      }
       createTodoItem(inputTextArea.value);
       inputTextArea.value = "";
       updateBottomControlsVisibility();
       updateItemCount();
       updateToggleButton();
+      updateClearCompletedVisibilityStatus();
     }
   });
 
@@ -197,6 +225,8 @@ function createTodoCheckbox() {
     selectToggle(event.target);
     updateItemCount();
     updateToggleButton();
+    updateFilterVisibilityStatus(event.target.parentNode);
+    updateClearCompletedVisibilityStatus();
   });
 
   // let input = document.createElement("input");
@@ -218,7 +248,12 @@ function createTodoTextElement(text) {
     if (event.keyCode == 13) {
       confirmTodoItemEdit(event.target);
     }
-    label.addEventListener("blur", () => disableContentEditable());
+    label.addEventListener("blur", () => {
+      disableContentEditable();
+      if (label.textContent == "") {
+        removeTodoItem(event.target);
+      }
+    });
   });
   return label;
 }
@@ -266,4 +301,15 @@ function setFilterBorder(targetLabel) {
 
   targetLabel.style.border = "0.04em solid rgba(47, 47, 47, 0.30)";
   targetLabel.style.borderRadius = "10%";
+}
+
+function updateClearCompletedVisibilityStatus() {
+  let clearCompleted = document.querySelector("#clear");
+  let todoItems = Array.from(document.querySelectorAll(".todo-item"));
+  let checkedTodoItems = todoItems.filter(t => t.firstChild.checked);
+  if (checkedTodoItems.length == 0) {
+    clearCompleted.style.visibility = "hidden";
+  } else {
+    clearCompleted.style.visibility = "visible";
+  }
 }
