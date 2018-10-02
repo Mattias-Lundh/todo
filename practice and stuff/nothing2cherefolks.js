@@ -1,3 +1,5 @@
+window.secret = "Godzilla";
+
 // function activateAmazing() {
 //   image = document.createElement("img");
 //   image.src = "practice and stuff/godzilla.gif";
