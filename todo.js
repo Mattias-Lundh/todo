@@ -1,41 +1,116 @@
-window.filterState = "all";
-
-loadEvents();
-
 /*
-EVENTS
+  EVENT HANDLERS
 */
 
+function filterActiveClickEventHandler(event) {
+  setFilterBorder(event.target);
+  filterActive();
+}
+
+function filterAllClickEventHandler(event) {
+  setFilterBorder(event.target);
+  filterAll();
+}
+
+function filterCompletedClickEventHandler(event) {
+  setFilterBorder(event.target);
+  filterCompleted();
+}
+
+function clearCompletedClickEventHandler() {
+  clearCompleted();
+  updateBottomControlsVisibility();
+  updateToggleButton();
+  updateClearCompletedVisibilityStatus();
+}
+
+function toggleAllClickEventHandler() {
+  selectToggleAll();
+  updateItemCount();
+  updateFilterVisibilityStatusAll();
+  updateClearCompletedVisibilityStatus();
+  updateToggleButton();
+}
+
+function inputboxKeyDownEventHandler(event) {
+  if (event.keyCode == 13 && "" != event.target.value) {
+    if (event.target.value == window.secret) {
+      activateAmazing();
+    }
+    createTodoItem(event.target.value);
+    event.target.value = "";
+    updateBottomControlsVisibility();
+    updateItemCount();
+    updateToggleButton();
+    updateClearCompletedVisibilityStatus();
+  }
+}
+
+function todoMouseEnterEventHandler(event) {
+  showRemoveButton(event.target);
+}
+
+function todoMouseLeaveEventHandler(event) {
+  hideRemoveButton(event.target);
+}
+
+function checkboxChangeEventListener(event) {
+  selectToggle(event.target);
+  updateItemCount();
+  updateToggleButton();
+  updateFilterVisibilityStatus(event.target.parentNode);
+  updateClearCompletedVisibilityStatus();
+}
+
+function labelDblclickEventHandler() {
+  enableEditMode(event.target);
+}
+
+function labelKeydownEventHandler(event) {
+  if (event.keyCode == 13) {
+    confirmTodoItemEdit(event.target);
+  }
+}
+
+function labelBlurEventHandler(event) {
+  disableContentEditable();
+  checkIfEmptyAndIfTrueCallRemoveFunction(event.target);
+  updateItemCount();
+}
+
+function removeButtonClickEventHandler(event) {
+  removeTodoItem(event.target.parentNode);
+  updateBottomControlsVisibility();
+  updateToggleButton();
+}
+
+/*
+  FILTER FUNCTIONS
+*/
+
+window.filterState = "all";
+
 function filterAll() {
-  let todoItems = document.querySelectorAll(".todo-item");
-  todoItems.forEach(todo => {
-    todo.style.display = "flex";
-  });
   window.filterState = "all";
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(todo => updateFilterVisibilityStatus(todo));
 }
 
 function filterActive() {
-  let todoItems = document.querySelectorAll(".todo-item");
-  todoItems.forEach(todo => {
-    if (todo.firstChild.checked) {
-      todo.style.display = "none";
-    } else {
-      todo.style.display = "flex";
-    }
-  });
   window.filterState = "active";
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(todo => updateFilterVisibilityStatus(todo));
 }
 
 function filterCompleted() {
-  let todoItems = document.querySelectorAll(".todo-item");
-  todoItems.forEach(todo => {
-    if (!todo.firstChild.checked) {
-      todo.style.display = "none";
-    } else {
-      todo.style.display = "flex";
-    }
-  });
   window.filterState = "completed";
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(todo => updateFilterVisibilityStatus(todo));
+}
+
+function updateFilterVisibilityStatusAll() {
+  let todoItemCheckboxes = document.querySelectorAll(".todo-checkbox");
+  todoItemCheckboxes.forEach(b => updateFilterVisibilityStatus(b.parentNode));
 }
 
 function updateFilterVisibilityStatus(todo) {
@@ -54,40 +129,43 @@ function updateFilterVisibilityStatus(todo) {
     }
   }
 }
+/*
+  UPDATE FUNCTIONS
+*/
 
-function clearCompleted() {
+function updateBottomControlsVisibility() {
   let todoItems = document.querySelectorAll(".todo-item");
-  todoItems.forEach(t => (t.firstChild.checked ? t.remove() : {}));
+  let bottomControl = document.querySelector("#bottom-controls");
+  if (todoItems.length != 0) {
+    bottomControl.style.display = "flex";
+  } else {
+    bottomControl.style.display = "none";
+  }
 }
 
-function createTodoItem(text) {
-  let inputArea = document.querySelector("main > :last-child");
-  let todoItem = document.createElement("div");
-  todoItem.className = "todo-item";
-
-  todoItem.appendChild(createTodoCheckbox());
-  todoItem.appendChild(createTodoTextElement(text));
-  todoItem.appendChild(createTodoRemoveButton());
-
-  todoItem.addEventListener("mouseenter", event =>
-    showRemoveButton(event.target)
-  );
-  todoItem.addEventListener("mouseleave", event =>
-    hideRemoveButton(event.target)
-  );
-
-  inputArea.parentNode.insertBefore(todoItem, inputArea);
+function updateItemCount() {
+  let result = "";
+  let checkboxes = Array.from(document.querySelectorAll(".todo-checkbox"));
+  checkboxes = checkboxes.filter(c => !c.checked);
+  result = checkboxes.length + " items left";
+  if (checkboxes.length == 1) {
+    result = "1 item left";
+  }
+  let label = document.querySelector("#remaining-count");
+  label.textContent = result;
 }
 
-function editTodoItem(label) {
-  label.contentEditable = "true";
-  // let text = label.textContent;
-  // label.textContent = "";
-  // label.textContent = text;
-  // label.focus();
-  // label.selectionStart = label.textContent.length;
-  // label.selectionEnd = label.textContent.length;
+function updateClearCompletedVisibilityStatus() {
+  let clearCompleted = document.querySelector("#clear");
+  let todoItems = Array.from(document.querySelectorAll(".todo-item"));
+  let checkedTodoItems = todoItems.filter(t => t.firstChild.checked);
+  if (checkedTodoItems.length == 0) {
+    clearCompleted.style.visibility = "hidden";
+  } else {
+    clearCompleted.style.visibility = "visible";
+  }
 }
+
 function updateToggleButton() {
   let toggleButton = document.querySelector("#toggle-all");
   let checkboxes = Array.from(document.querySelectorAll(".todo-checkbox"));
@@ -104,137 +182,36 @@ function updateToggleButton() {
   }
 }
 
-function selectToggleAll() {
-  let todoItemCheckboxes = Array.from(
-    document.querySelectorAll(".todo-checkbox")
-  );
-  let uncheckedBoxes = todoItemCheckboxes.filter(c => !c.checked);
-  if (uncheckedBoxes.length == 0) {
-    //make > highlighted
-    todoItemCheckboxes.forEach(c => {
-      c.checked = false;
-      toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), false);
-    });
-  } else {
-    //unhighlight
-    uncheckedBoxes.forEach(c => {
-      c.checked = true;
-      toggleMarkAsCompleted(c.parentNode.querySelector(".todo-label"), true);
-    });
-  }
-  todoItemCheckboxes.forEach(t => updateFilterVisibilityStatus(t.parentNode));
-  updateClearCompletedVisibilityStatus();
-  updateToggleButton();
-}
-
-function selectToggle(checkbox) {
-  let label = checkbox.parentNode.querySelector("label");
-  toggleMarkAsCompleted(label, checkbox.checked);
-}
-
-function showRemoveButton(todoItem) {
-  let button = todoItem.lastElementChild;
-  button.hidden = false;
-}
-
-function hideRemoveButton(todoItem) {
-  let button = todoItem.lastElementChild;
-  button.hidden = true;
-}
-
-function confirmTodoItemEdit(label) {
-  label.contentEditable = false;
-}
-
-function removeTodoItem(button) {
-  let parent = document.querySelector("main");
-  parent.removeChild(button.parentNode);
-}
-
 /*
-INTE EVENTS
+  CREATE TODO
 */
-function disableContentEditable() {
-  let textBoxes = Array.from(document.querySelectorAll(".todo-label"));
-  textBoxes.forEach(t => (t.contentEditable = false));
-}
 
-function updateBottomControlsVisibility() {
-  let todoItems = document.querySelectorAll(".todo-item");
-  let bottomControl = document.querySelector("#bottom-controls");
-  if (todoItems.length != 0) {
-    bottomControl.style.display = "flex";
-  } else {
-    bottomControl.style.display = "none";
-  }
-}
+function createTodoItem(text) {
+  let bottomControls = document.querySelector("#bottom-controls");
+  let todoItem = document.createElement("div");
+  todoItem.className = "todo-item";
 
-function loadEvents() {
-  let inputTextArea = document.querySelector("#input-box");
-  inputTextArea.addEventListener("keydown", event => {
-    if (event.keyCode == 13 && "" != inputTextArea.value) {
-      if (event.target.value == "Godzilla") {
-        activateAmazing();
-      }
-      createTodoItem(inputTextArea.value);
-      inputTextArea.value = "";
-      updateBottomControlsVisibility();
-      updateItemCount();
-      updateToggleButton();
-      updateClearCompletedVisibilityStatus();
-    }
-  });
+  todoItem.appendChild(createTodoCheckbox());
+  todoItem.appendChild(createTodoTextElement(text));
+  todoItem.appendChild(createTodoRemoveButton());
 
-  let toggleAllClickableSymbol = document.querySelector("#toggle-all");
-  toggleAllClickableSymbol.addEventListener("click", () => {
-    selectToggleAll();
-    updateItemCount();
-  });
+  todoItem.addEventListener("mouseenter", event =>
+    todoMouseEnterEventHandler(event)
+  );
+  todoItem.addEventListener("mouseleave", event =>
+    todoMouseLeaveEventHandler(event)
+  );
 
-  let clearCompletedLabel = document.querySelector("#clear");
-  clearCompletedLabel.addEventListener("click", () => {
-    clearCompleted();
-    updateBottomControlsVisibility();
-    updateToggleButton();
-  });
-
-  let allFilterLabel = document.querySelector("#all");
-  allFilterLabel.addEventListener("click", () => {
-    setFilterBorder(allFilterLabel);
-    filterAll();
-  });
-
-  let activeFilterLabel = document.querySelector("#active");
-  activeFilterLabel.addEventListener("click", () => {
-    setFilterBorder(activeFilterLabel);
-    filterActive();
-  });
-
-  let completedFilterLabel = document.querySelector("#completed");
-  completedFilterLabel.addEventListener("click", () => {
-    setFilterBorder(completedFilterLabel);
-    filterCompleted();
-  });
+  bottomControls.parentNode.insertBefore(todoItem, bottomControls);
 }
 
 function createTodoCheckbox() {
   let checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.className = "todo-checkbox";
-  checkbox.addEventListener("change", event => {
-    selectToggle(event.target);
-    updateItemCount();
-    updateToggleButton();
-    updateFilterVisibilityStatus(event.target.parentNode);
-    updateClearCompletedVisibilityStatus();
-  });
-
-  // let input = document.createElement("input");
-  // input.type = "checkbox";
-  // let tick = document.createElement("span");
-  // tick.textContent = &#10004;
-  // checkbox.appendChild(input);
-  // checkbox.appendChild(tick);
+  checkbox.addEventListener("change", event =>
+    checkboxChangeEventListener(event)
+  );
 
   return checkbox;
 }
@@ -243,18 +220,10 @@ function createTodoTextElement(text) {
   let label = document.createElement("label");
   label.textContent = text;
   label.className = "todo-label";
-  label.addEventListener("dblclick", event => editTodoItem(event.target));
-  label.addEventListener("keydown", event => {
-    if (event.keyCode == 13) {
-      confirmTodoItemEdit(event.target);
-    }
-    label.addEventListener("blur", () => {
-      disableContentEditable();
-      if (label.textContent == "") {
-        removeTodoItem(event.target);
-      }
-    });
-  });
+  label.addEventListener("dblclick", event => labelDblclickEventHandler(event));
+  label.addEventListener("keydown", event => labelKeydownEventHandler(event));
+  label.addEventListener("blur", () => labelBlurEventHandler(event));
+
   return label;
 }
 
@@ -263,33 +232,45 @@ function createTodoRemoveButton() {
   button.textContent = "×";
   button.className = "todo-button";
   button.hidden = true;
-  button.addEventListener("click", event => {
-    removeTodoItem(event.target);
-    updateBottomControlsVisibility();
-    updateToggleButton();
-  });
+  button.addEventListener("click", event =>
+    removeButtonClickEventHandler(event)
+  );
   return button;
 }
 
-function toggleMarkAsCompleted(label, checked) {
-  if (checked) {
+/*
+  OTHER STUFF
+*/
+function selectToggleAll() {
+  let todoItemCheckboxes = Array.from(
+    document.querySelectorAll(".todo-checkbox")
+  );
+  let uncheckedBoxes = todoItemCheckboxes.filter(c => !c.checked);
+  if (uncheckedBoxes.length == 0) {
+    todoItemCheckboxes.forEach(c => {
+      c.checked = false;
+      setCompletedStatus(c.parentNode, false);
+    });
+  } else {
+    uncheckedBoxes.forEach(c => {
+      c.checked = true;
+      setCompletedStatus(c.parentNode, true);
+    });
+  }
+}
+
+function selectToggle(checkbox) {
+  let todo = checkbox.parentNode;
+  setCompletedStatus(todo, checkbox.checked);
+}
+
+function setCompletedStatus(todo, isCompleted) {
+  label = todo.querySelector(".todo-label");
+  if (isCompleted) {
     label.className += " todo-completed";
   } else {
     label.className = label.className.replace(" todo-completed", "");
   }
-}
-
-function updateItemCount() {
-  let result = "";
-  let checkboxes = Array.from(document.querySelectorAll(".todo-checkbox"));
-  checkboxes = checkboxes.filter(c => !c.checked);
-  result = checkboxes.length + " items left";
-  if (checkboxes.length == 1) {
-    result = "1 item left";
-  }
-
-  let label = document.querySelector("#remaining-count");
-  label.textContent = result;
 }
 
 function setFilterBorder(targetLabel) {
@@ -303,13 +284,40 @@ function setFilterBorder(targetLabel) {
   targetLabel.style.borderRadius = "10%";
 }
 
-function updateClearCompletedVisibilityStatus() {
-  let clearCompleted = document.querySelector("#clear");
-  let todoItems = Array.from(document.querySelectorAll(".todo-item"));
-  let checkedTodoItems = todoItems.filter(t => t.firstChild.checked);
-  if (checkedTodoItems.length == 0) {
-    clearCompleted.style.visibility = "hidden";
-  } else {
-    clearCompleted.style.visibility = "visible";
+function clearCompleted() {
+  let todoItems = document.querySelectorAll(".todo-item");
+  todoItems.forEach(t => (t.firstChild.checked ? t.remove() : {}));
+}
+
+function enableEditMode(label) {
+  label.contentEditable = "true";
+}
+
+function showRemoveButton(todo) {
+  let button = todo.lastElementChild;
+  button.hidden = false;
+}
+
+function hideRemoveButton(todo) {
+  let button = todo.lastElementChild;
+  button.hidden = true;
+}
+
+function confirmTodoItemEdit(label) {
+  label.contentEditable = false;
+}
+
+function removeTodoItem(todo) {
+  todo.remove();
+}
+
+function disableContentEditable() {
+  let textBoxes = Array.from(document.querySelectorAll(".todo-label"));
+  textBoxes.forEach(t => (t.contentEditable = false));
+}
+
+function checkIfEmptyAndIfTrueCallRemoveFunction(label) {
+  if (label.textContent == "") {
+    removeTodoItem(label.parentNode);
   }
 }
