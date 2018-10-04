@@ -205,6 +205,12 @@ footer p {
   #input-box {
     padding-right: 0px;
   }
+
+  .todo-button {
+    transition: 500ms;
+    z-index: 999;
+    color: rgba(175, 47, 47, 0.82);
+  }
 }
 
 #god {
